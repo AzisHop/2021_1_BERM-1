@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fl_ru/model"
 	"fl_ru/store"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -45,8 +46,17 @@ func (s *server) configureRouter(){
 
 }
 
-func (s *server) handleSignUp() http.HandlerFunc{
+func (s *server) handleSignUp() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request){
+
+
+		//Настройка для CORS, необходимо добавлять в каждый хендлер
+		if (*r).Method == "OPTIONS" {
+			setupDifficultResponse(&w, r)
+			return
+		}
+		setupSimpleResponse(&w, r)
+
 		u := &model.User{}
 		if err := json.NewDecoder(r.Body).Decode(u) ;err != nil{
 			s.error(w, r, http.StatusBadRequest, err)
@@ -85,6 +95,14 @@ func (s *server) handleSignIn() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request){
+		fmt.Println("Xui")
+		//Настройка для CORS, необходимо добавлять в каждый хендлер
+		if (*r).Method == "OPTIONS" {
+			setupDifficultResponse(&w, r)
+			return
+		}
+		setupSimpleResponse(&w, r)
+
 		request := &Request{}
 		if err := json.NewDecoder(r.Body).Decode(request) ;err != nil{
 			s.error(w, r, http.StatusBadRequest, err)
@@ -117,7 +135,14 @@ func (s *server) handleSignIn() http.HandlerFunc {
 //profile/1
 func (s *server) handleCreateProfile() http.HandlerFunc {
 
-	return func(w http.ResponseWriter, r *http.Request){
+	return func(w http.ResponseWriter, r *http.Request) {
+		//Настройка для CORS, необходимо добавлять в каждый хендлер
+		if (*r).Method == "OPTIONS" {
+			setupDifficultResponse(&w, r)
+			return
+		}
+		setupSimpleResponse(&w, r)
+
 		//Дернуть id из контекста
 		w.WriteHeader(http.StatusOK)
 	}
@@ -125,6 +150,13 @@ func (s *server) handleCreateProfile() http.HandlerFunc {
 
 func (s *server) authenticateUser(next http.Handler) http.HandlerFunc{
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//Настройка для CORS, необходимо добавлять в каждый хендлер
+		if (*r).Method == "OPTIONS" {
+				setupDifficultResponse(&w, r)
+				return
+			}
+			setupSimpleResponse(&w, r)
+
 			id := mux.Vars(r)["id"]
 			cookie, err := r.Cookie("session")
 			if err != nil {
